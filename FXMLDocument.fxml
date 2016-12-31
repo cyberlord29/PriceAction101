@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.media.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="341.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="PriceAction101.FXMLDocumentController"> 
+    <children>
+        <Button fx:id="bAdd" layoutX="49.0" layoutY="44.0" onAction="#handleButtonAction" prefHeight="25.0" prefWidth="80.0" text="Add" />
+      <AnchorPane fx:id="tabPane" layoutX="173.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="341.0" prefWidth="467.0">
+        <children>
+          <fx:include source="FXMLTabView.fxml" />
+        </children>
+      </AnchorPane>
+    
+    </children>
+</AnchorPane>
