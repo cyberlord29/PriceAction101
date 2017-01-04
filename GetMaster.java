@@ -16,6 +16,9 @@ import org.jsoup.nodes.Element;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import PriceAction101.Attributes;
+import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.json.JSONException;
 
 /**
@@ -88,23 +91,24 @@ public class GetMaster {
      * @return Intraday Object
      * @throws Exception
      */
-    public static Intraday getQuoteIntraday(String Symbol,int days)throws Exception{
+ /*   public static Intraday getQuoteIntraday(String Symbol,int days)throws Exception{  // SAFELY KILL THIS
    
        JSONObject json = getJSON(Symbol,days);
        
        JSONArray series = json.getJSONArray("series");
        long max   = json.getJSONObject("Timestamp").getLong("max");
-       
-       Intraday newday =  new Intraday(series,max);
+       long min   = json.getJSONObject("Timestamp").getLong("min");
+       //  System.out.println("masdf: ");
+      Intraday newday =  getIntraday();
        
       // System.out.println(newday.getMins().toString());
        
       return newday;
    }
    
+ */
    
-   
-   private static JSONObject getJSON(String Symbol,int days){
+   public static JSONObject getJSON(String Symbol,int days){
        
        ///////..............GET json...........DEFINE STRUCTURE IN API  ........ GETMETHODS FOR ALL DATA .....
        
@@ -135,17 +139,32 @@ public class GetMaster {
      */
     public static void getSpike(String Symbol) throws Exception{
        
-       Intraday newday = getQuoteIntraday(Symbol,1);
+       Intraday newday = new Intraday(Symbol);
        
-       int av = newday.getav("m");
+       int av = newday.getAV();
        int recentVolume = newday.getRecentVolume();
        
        
-       //System.out.println( Integer.toString(av) +"  " + Integer.toString(recent));
+      // System.out.println( Integer.toString(av) +"  " + Integer.toString(newday.recent));
        
-       //System.out.println("Symbol  :  "+Symbol +"\nRecent Volume : "+ Integer.toString(recentVolume) + "  , Average Volume : "+Integer.toString(av) );
-      
-       if(recentVolume > 1.5*av){
+      // System.out.println("Symbol  :  "+Symbol+"\nRecent Volume : "+ Integer.toString(recentVolume) + "  , Average Volume : "+ Integer.toString(av) );
+       
+        ExecutorService slave = Executors.newSingleThreadExecutor();
+     
+        slave.execute(() -> {
+             if(recentVolume > 1.5*av){
+           
+           
+                  System.out.println("-------------------------\n\n SPIKE AT : "+ Symbol 
+                                +  Util.getTimeReadable(newday.getMins().get(newday.recent).getTimestamp() ) +"\n\n-------------------------"  );
+           
+              }
+       }); 
+
+        slave.shutdown();
+     // System.out.println(Symbol.replace(".NS",""));
+       
+   /*    if(recentVolume > 1.5*av){
            
            
            System.out.println("-------------------------\n\n        SPIKE AT : "+ Symbol 
@@ -153,10 +172,10 @@ public class GetMaster {
            
        }
        
-       
+       */
    
-   }
-   
+    }
+    
     /**
      * Gets Basic Quote information to STD_OUTPUT for testing.
      * @param Symbol
@@ -177,8 +196,7 @@ public class GetMaster {
                               
                               +"  Traded Volume : "+data.getJSONObject(0).getString("totalTradedVolume"));  
                //}
-               
-                
+                 
       }  
  
       catch(Exception e){System.out.print("Get Basic:"+e);}

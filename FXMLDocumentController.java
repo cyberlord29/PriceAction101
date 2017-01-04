@@ -20,6 +20,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.json.JSONException;
 
 
@@ -66,52 +68,56 @@ public class FXMLDocumentController implements Initializable {
         
         
       
-      Symbols s = getInstance();
+   /*   Symbols s = getInstance();
       ArrayList<Symbol> e  = s.getSymbolList();
-      System.out.println(e.get(1).toString());
-      int i=0;
+     //System.out.println(e.get(1).toString());
+     
         for (Symbol a : s.getSymbolList()) {
           
             GetMaster.getBasic(a.toStringNSE());
             
         }
+    */
         
-        
-       // Symbols s = getInstance();
-        
-    /*    while(true){
+        Symbols s = getInstance();
+     /*   
+        while(true){
            
             for (Iterator<Symbol> it = s.getSymbolList().iterator(); it.hasNext();) {
                 Symbol a = it.next();
-                try{ GetMaster.getSpike(a.toString());
+                try{ GetMaster.getSpike(a.toStringYahoo());
                 }catch(Exception e){it.remove();}
                         }   }
         
+       
         */
         
-        
 
-   /*     ArrayList<Runner> threadpool = new ArrayList<>();
+        ArrayList<VolumeSpikeIndicator> threadpool = new ArrayList<>();
+    
+   
+for (Iterator<Symbol> it = s.getSymbolList().iterator(); it.hasNext();){
         
-        
-        for (Iterator<Symbol> it = s.getSymbolList().iterator(); it.hasNext();){
-        
-            threadpool.add(new Runner(it.next()));
+           threadpool.add(new VolumeSpikeIndicator(it.next()));
             
         
-        }
+      }
         
-        
+       
+       System.out.println("GOING TO START");
        int a = threadpool.size();
        int i;
        for(i = 0 ; i<a ; i++){
+      try{ Thread.sleep(15);
            threadpool.get(i).start();
-       }
+        }catch(InterruptedException e){System.out.println("Main Thread :"+ e );}
+       
+       
         
-        */
     }
            
-}  
+} 
+}
         
   
 

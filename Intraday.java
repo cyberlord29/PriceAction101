@@ -15,53 +15,92 @@ import org.json.JSONException;
  * Class to store Intraday Data and Interval based Data.
  * @author Man Eesh
  */
-public class Intraday {
+public class Intraday  {
     
- 
-   private ArrayList<OHLCV> mins = new ArrayList<>();
-                int  avm  = 0;
-                int avh = 0;
-                long start;
-                int recent;
-                long eod;
-                int volumeHigh=0;
+    
+   public ArrayList<OHLCV> mins = new ArrayList<>();
+                
+                long min;
+                int  recent = 0;
+                long max;
+                int  totalVolume=0;
+     private String symbol ;
    
+     public Intraday(String symbol)throws Exception{
+         
+         this.symbol = symbol;
+         this.getIntraday();
+         
+         
+     }    
+     
+     
+     
     /**
      * Makes OHLCV Array of 1min Intraday data from YFinance.
      * @param series
      * @param max
+     * @param range
      */
-    public Intraday(JSONArray series , long max){
+    public void makeIntraday(JSONArray series , long max , long min){
        
-       OHLCV min;
-       int i=0;
+       OHLCV minute;
+       int i=this.recent;  // enables implicit updation w/o new OHLCV object
        long t= 0;
      //CHECK MAX i FROM TIME RANGE
-     try{  
+       this.max = max;
+       this.min = min;
+      
+       
+       try{  
       while(t <= max-80) {       
            t = series.getJSONObject(i).getLong("Timestamp");
-               min = new OHLCV( series.getJSONObject(i).getDouble("open"),
+              
+           minute = new OHLCV( series.getJSONObject(i).getDouble("open"),
                               series.getJSONObject(i).getDouble("high"),
                               series.getJSONObject(i).getDouble("low"),
                               series.getJSONObject(i).getDouble("close"),
                               series.getJSONObject(i).getInt("volume"),
                               t 
-                            );
-         
-         
-         
-          mins.add(min);
-          
+                              );
+               
+               
+          this.mins.add(minute);
           i++;
         }
-      }catch(JSONException e){//System.out.println(e);
-                                  this.recent = i-1;
-                                  return;
+      }catch(JSONException e){
+           //System.out.println(e);
+           //System.out.println(e);
+                                  
                                 }   
-      
+      finally{
+           int j;
+          for(j=this.recent ; j <= i-1 ; j++)  
+          this.totalVolume += this.mins.get(j).getVolume();     
        this.recent = i-1;
+      // System.out.println( i-1);
+       }
        
    }
+    
+    
+     public void getIntraday() throws Exception{
+   
+        
+       JSONObject json = GetMaster.getJSON(this.symbol,1);
+       
+       JSONArray series = json.getJSONArray("series");
+       long max   = json.getJSONObject("Timestamp").getLong("max");
+       long min   = json.getJSONObject("Timestamp").getLong("min");
+       //  System.out.println("masdf: ");
+     
+      
+      this.makeIntraday(series,max,min);
+    //  }catch(Exception e){System.out.println("getIntraday() : "+symbol + e);}  
+      // System.out.println(newday.getMins().toString());
+       
+      
+    }
 
     /**
      * Returns ArrayList of OHLCV.
@@ -71,38 +110,22 @@ public class Intraday {
         return mins;
     }
    
-    /**
-     * Returns Average Volume of the day based on Interval.
-     * @param interval
-     * @return int
-     */
-    public int  getav(String interval){
-      
-       int j=0;
-       int av = 0;
-        // System.out.println(this.recent);
-       for(j=0 ; j <= recent ; j++)  
-          av += this.mins.get(j).getVolume();
-           
-       if(null != interval)switch (interval) {
-           case "h":
-               av/=6.3;
-               break;
-           case "m":
-               if(this.recent==0)return 0;
-               av/= this.recent;
-               break;               //GET PROPER DIVISOR FROM MoST RECENT 
-           case "15m":
-               av/=26;
-               break;
-           case "5m":
-               av/=26*3;
-               break;
-       }  
-   
-   return av;
-   
-   }
+    
+    public int getAV(int mins){
+     
+        int av = this.totalVolume/(this.recent+1);
+        return av*mins;
+    
+    }
+    
+     public int getAV(){
+     
+        int av = this.totalVolume/(this.recent+1);
+        return av;
+    
+    }
+    
+    
    
     /**
      * Returns most recent quotes 1min volume. 
@@ -110,13 +133,26 @@ public class Intraday {
      */
     public int getRecentVolume(){
       //string interval param
-       int l;
+       int rv;
         
-       try{l = this.getMins().get(this.recent-1).getVolume();
-       }catch(Exception e){l = 0;}
+       try{rv = this.getMins().get(this.recent-1).getVolume();
+      }catch(Exception e){rv = 0;}
        
-       return l;
+       return rv;
        
    }
-   //make more getters
+    
+    
+    
+     public int getRecentVolume(int mins){
+      //string interval param
+       int rv;
+        
+       try{rv = this.getMins().get(this.recent-1-mins).getVolume();
+       }catch(Exception e){rv = 0;}
+       
+       return rv;
+       
+   }
+    
 }
